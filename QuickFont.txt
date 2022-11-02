@@ -7,77 +7,96 @@
     7 CLEAR 64600-1
     8 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
     9 POKE 23658,0: REM NO CAPS
-   10 LET bc=7: LET c$="A"
+   10 LET fc=0: LET bc=7: LET c$="A"
    20 GO SUB 7000: REM BaseScreen
    21 GO SUB 7100: REM View menu
-   22 GO SUB 45: REM Bytes into d
-   23 GO SUB 50: REM Bits into a$
+   22 GO SUB 55: REM Bytes into d
+   23 GO SUB 60: REM Bits into a$
    24 GO SUB 70: REM Print a$
-   30 LET k$=INKEY$: IF k$="" THEN GO TO 30
-   31 IF k$=" STOP " THEN PAPER 0: INK 7: CLS : PRINT AT 9,1;"TO USE NEW FONT:"''" POKE 23606,";l'" POKE 23607,";h: STOP 
-   32 IF CODE k$=15 THEN GO TO 4000
-   33 IF CODE k$=10 THEN GO TO 5000
-   34 IF CODE k$=11 THEN GO TO 6000
-   35 IF CODE k$=8 THEN GO SUB 7050
-   36 IF CODE k$=9 THEN GO SUB 7060
-   37 IF CODE k$=13 THEN GO TO 90
-   38 IF CODE k$=14 THEN GO SUB 7150
-   39 IF k$>=" " AND k$<="\*" THEN LET c$=k$: GO SUB 7040: GO SUB 45: GO SUB 50: GO SUB 70
-   40 GO TO 30
-   45 REM Set cad & load bytes
-   46 LET cad=ad+8*(CODE c$-32): REM Char. addr.
-   47 DIM d(8)
-   48 FOR a=1 TO 8: LET d(a)=PEEK (cad+a-1): NEXT a
-   49 RETURN 
-   50 REM Decode char bits into a$
-   51 DIM a$(8,8)
-   52 FOR a=1 TO 8: LET x=d(a): IF x>127 THEN LET a$(a,1)="\::": LET x=x-128
-   53 IF x>63 THEN LET a$(a,2)="\::": LET x=x-64
-   54 IF x>31 THEN LET a$(a,3)="\::": LET x=x-32
-   55 IF x>15 THEN LET a$(a,4)="\::": LET x=x-16
-   56 IF x>7 THEN LET a$(a,5)="\::": LET x=x-8
-   57 IF x>3 THEN LET a$(a,6)="\::": LET x=x-4
-   58 IF x>1 THEN LET a$(a,7)="\::": LET x=x-2
-   59 IF x>0 THEN LET a$(a,8)="\::"
-   60 NEXT a
-   61 RETURN 
+   30 LET k$=INKEY$: LET k=CODE k$: IF k$="" THEN GO TO 30
+   31 IF k$=" STOP " THEN GO TO 500
+   32 IF k=15 THEN GO TO 4000: REM Test
+   33 IF k=4 THEN GO TO 5000: REM Save
+   34 IF k=5 THEN GO TO 6000: REM Load
+   35 IF k=8 THEN GO SUB 7050: REM bc-
+   36 IF k=9 THEN GO SUB 7060: REM bc+
+   37 IF k=13 THEN GO TO 90: REM Edit
+   38 IF k$=" STEP " THEN LET k$="\\"
+   39 IF k$=" TO " THEN LET k$="{"
+   40 IF k$=" THEN " THEN LET k$="}"
+   41 IF k$=" AND " THEN LET k$="["
+   42 IF k$=" OR " THEN LET k$="]"
+   43 IF k=14 THEN GO SUB 7150: REM Ext. char.
+   44 IF k$="<=" THEN INPUT "CONFIRM COPY ROM FONT (Y/N)";z$: PAUSE 30: IF z$="y" THEN GO SUB 450: REM Copy all ROM font chars
+   45 IF k=10 THEN GO SUB 7070: REM fc-
+   46 IF k=11 THEN GO SUB 7080: REM fc+
+   48 IF k$>=" " AND k$<="\*" THEN LET c$=k$: GO SUB 7040: GO SUB 55: GO SUB 60: GO SUB 70
+   49 GO TO 30
+   54 REM Set cad & load bytes
+   55 LET cad=ad+8*(CODE c$-32): REM Char. addr.
+   56 DIM d(8): DIM e(8)
+   57 FOR a=1 TO 8: LET d(a)=PEEK (cad+a-1): LET e(a)=d(a): NEXT a
+   58 RETURN 
+   59 REM Decode char bits into a$
+   60 DIM a$(8,8): FOR a=1 TO 8: LET x=d(a): IF x>127 THEN LET a$(a,1)="\::": LET x=x-128
+   61 IF x>63 THEN LET a$(a,2)="\::": LET x=x-64
+   62 IF x>31 THEN LET a$(a,3)="\::": LET x=x-32
+   63 IF x>15 THEN LET a$(a,4)="\::": LET x=x-16
+   64 IF x>7 THEN LET a$(a,5)="\::": LET x=x-8
+   65 IF x>3 THEN LET a$(a,6)="\::": LET x=x-4
+   66 IF x>1 THEN LET a$(a,7)="\::": LET x=x-2
+   67 IF x>0 THEN LET a$(a,8)="\::"
+   68 NEXT a
+   69 RETURN 
    70 REM Print a$
    71 FOR a=1 TO 8: PRINT AT 11+a,14; PAPER 7;a$(a): NEXT a
    72 RETURN 
    90 REM Edit
-   91 GO SUB 45
+   91 GO SUB 55: REM Load bits
    95 GO SUB 7130: REM Edit menu
   100 LET r=1: LET c=1
   101 PRINT AT 11+r,13+c; OVER 1;"+"
-  102 LET k$=INKEY$: IF k$="c" THEN GO TO 900
-  103 IF CODE k$=13 THEN GO TO 800
-  104 IF k$=" " THEN LET a$(r,c)=(" " AND a$(r,c)="\::")+("\::" AND a$(r,c)=" "): GO SUB 200
-  105 LET xr=r: LET xc=c: LET r=r+(k$="z" AND r<8)-(k$="a" AND r>1): LET c=c+(k$="l" AND c<8)-(k$="k" AND c>1)
+  102 LET k$=INKEY$: LET k=CODE k$: IF k$="c" THEN GO TO 900
+  103 IF k=13 THEN GO SUB 7032: GO TO 21: REM Exit edit
+  104 IF k$=" " THEN LET a$(r,c)=(" " AND a$(r,c)="\::")+("\::" AND a$(r,c)=" "): GO TO 200
+  105 LET xr=r: LET xc=c: LET r=r+((k$="z" OR k=10) AND r<8)-((k$="a" OR k=11) AND r>1): LET c=c+((k$="l" OR k=9) AND c<8)-((k$="k" OR k=8) AND c>1)
   106 PRINT AT 11+xr,13+xc; PAPER 7;a$(xr,xc)
-  107 IF k$="0" THEN INPUT "CONFIRM CLEAR ALL BITS (Y/N)";z$: IF z$="y" THEN GO TO 300: REM Clear all bits
+  107 IF k$="0" THEN INPUT "CONFIRM CLEAR ALL BITS (Y/N)";z$: PAUSE 30: IF z$="y" THEN GO TO 300: REM Clear all bits
   108 IF k$="5" THEN GO SUB 7050
   109 IF k$="8" THEN GO SUB 7060
-  110 IF k$="r" THEN INPUT "CONFIRM COPY FROM ROM (Y/N)";z$: IF z$="y" THEN GO TO 400: REM Copy ROM bits
-  111 GO TO 101
+  110 IF k$="6" THEN GO SUB 7070
+  111 IF k$="7" THEN GO SUB 7080
+  112 IF k$="r" THEN INPUT "CONFIRM COPY FROM ROM (Y/N)";z$: PAUSE 30: IF z$="y" THEN GO TO 400: REM Copy ROM bits
+  113 IF k$="R" THEN GO TO 400: REM Copy w/o confirm
+  119 GO TO 101
   200 IF a$(r,c)=" " THEN POKE cad+r-1,PEEK (cad+r-1)-2^(8-c)
   201 IF a$(r,c)="\::" THEN POKE cad+r-1,PEEK (cad+r-1)+2^(8-c)
   202 GO SUB 7040: GO TO 102
   300 REM Clear
   310 FOR a=1 TO 8: LET a$(a)="": POKE cad+a-1,0: NEXT a
-  320 GO SUB 50: GO SUB 70
+  320 GO SUB 60: GO SUB 70
   330 GO TO 101
   400 REM Copy ROM bits
   410 FOR a=1 TO 8: LET d(a)=PEEK (15616+cad-ad+a-1): POKE cad+a-1,d(a): NEXT a
-  412 GO SUB 50
-  414 GO SUB 70
-  416 GO SUB 7040
+  412 GO SUB 60: REM d() to a$
+  414 GO SUB 70: REM print a$
+  416 GO SUB 7040: REM Print char
   420 GO TO 101
-  800 REM Finish
-  805 GO SUB 7032: GO TO 21
+  450 REM Copy ROM font
+  452 FOR a=1 TO 768: POKE ad+a-1,PEEK (15616+a-1): NEXT a
+  454 RETURN 
+  500 REM Quit program
+  502 PAPER 0: INK 7: CLS 
+  504 PRINT AT 9,1;"TO USE NEW FONT:"''
+  505 PRINT " CLEAR ";ad-1
+  506 PRINT " LOAD """"CODE ";ad;",768"'
+  508 PRINT " POKE 23606,";l;": POKE 23607,";h
+  509 STOP 
   900 REM Cancel
   901 PRINT #0; FLASH 1;" EDIT CANCELED  "
-  902 FOR a=1 TO 8: POKE cad+a-1,d(a): NEXT a
-  903 PAUSE 60: INPUT "": GO TO 800
+  902 FOR a=1 TO 8: POKE cad+a-1,e(a): NEXT a
+  903 PAUSE 60: INPUT ""
+  904 GO SUB 7032: GO TO 21
  4000 REM Test
  4010 PAPER 0: INK 7: CLS 
  4020 INPUT "PAPER COLOR:";p: PAPER p: BORDER p: CLS 
@@ -92,11 +111,11 @@
  4050 BEEP 0.01,0: GO TO 4040
  5000 REM Save
  5010 GO SUB 7200
- 5020 PRINT AT 11,1;"SAVE MODE:"''" ENTER FILE"'" NAME TO SAVE"'" OR NONE"'" TO ABORT."
+ 5020 PRINT AT 11,1; INVERSE 1;"SAVE MODE"; INVERSE 0''" ENTER FILE"'" NAME TO SAVE"'" OR NONE"'" TO ABORT."
  5029 INPUT f$
  5030 IF f$="" OR LEN f$>10 THEN PRINT #0; FLASH 1;" SAVE ABORTED ": PAUSE 120: INPUT "": GO TO 21
  5040 SAVE f$CODE ad,768
- 5050 GO SUB 7200: PRINT AT 11,1;"SAVE DONE:"''" DO YOU WANT"'" TO VERIFY"'" THE FILE?"'" Y/N"
+ 5050 GO SUB 7200: PRINT AT 11,1; INVERSE 1;"SAVE DONE"; INVERSE 0''" DO YOU WANT"'" TO VERIFY"'" THE FILE?"'" Y/N"
  5060 INPUT k$: IF k$<>"y" THEN GO TO 21
  5070 GO SUB 7200: PRINT AT 11,1;"REWIND AND"'" PLAY THE "'" TAPE TO"'" VERIFY."
  5075 PRINT AT 0,0;
@@ -104,7 +123,7 @@
  5090 PRINT #0; FLASH 1;" FILE OK ": PAUSE 120: INPUT "": GO TO 20
  6000 REM Load
  6010 GO SUB 7200
- 6020 PRINT AT 11,1;"LOAD MODE:"''" INPUT FILE"'" NAME TO"'" LOAD OR"'" ""STOP"" TO"'" ABORT."
+ 6020 PRINT AT 11,1; INVERSE 1;"LOAD MODE"; INVERSE 0''" INPUT FILE"'" NAME TO"'" LOAD OR"'" ""STOP"" TO"'" ABORT."
  6030 INPUT f$: IF f$=" STOP " THEN PRINT #0; FLASH 1;" LOAD ABORTED ": PAUSE 120: INPUT "": GO TO 21
  6040 GO SUB 7200: PRINT AT 11,1;"PLAY TAPE"'" NOW TO"'" LOAD."
  6045 PRINT AT 0,0;
@@ -128,7 +147,7 @@
  7034 GO SUB 8010: REM ROM font
  7039 PRINT AT 16,26; PAPER bc;"   ";AT 17,26;"   ";AT 18,26;"   "
  7040 GO SUB 8020: REM Alt font
- 7041 PRINT AT 17,27; PAPER bc; INK 9;c$
+ 7041 PRINT AT 17,27; INK fc; PAPER bc;c$
  7042 GO SUB 8010: REM ROM font
  7043 PRINT AT 14,27;c$;
  7044 RETURN 
@@ -136,20 +155,25 @@
  7051 GO TO 7039
  7060 LET bc=bc+1: IF bc=8 THEN LET bc=0
  7061 GO TO 7039
+ 7070 LET fc=fc-1: IF fc=-1 THEN LET fc=7
+ 7071 GO TO 7039
+ 7080 LET fc=fc+1: IF fc=8 THEN LET fc=0
+ 7081 GO TO 7039
  7100 REM VIEW MENU
- 7110 PRINT AT 11,1; INVERSE 1;"VIEW MODE"; INVERSE 0'" ENTER=EDIT"'" Shift+6=SAVE"'" Shift+7=LOAD"'" Shift+9=TEST"'" STOP=EXIT"'" PRESS KEY TO"'"  VIEW CHAR."'" Shift+SymbSh"'"  then yupdfg";AT 21,1;" gets []\*\\{}"
- 7120 PRINT AT 12,24;"VIEWING": RETURN 
+ 7110 PRINT AT 11,1; INVERSE 1;"VIEW MODE"; INVERSE 0'" ENTER=EDIT"'" Shift+3=SAVE"'" Shift+4=LOAD"'" Shift+9=TEST"'" STOP=EXIT  "'" PRESS KEY TO"'"  VIEW CHAR."'" Shift+SymbSh"'"  then yupdfg";AT 21,1;" gets []\*\\{}"
+ 7120 PRINT AT 12,24;"VIEWING";AT 20,23;"FG:^5-+8";AT 21,23;"BG:^6-+7": RETURN 
  7125 REM EDIT MENU
- 7130 PRINT AT 11,1; INVERSE 1;"EDIT MODE"; INVERSE 0'" A=UP   R= "'" Z=DOWN  COPY"'" K=LEFT  FROM"'" L=RIGHT  ROM"'" 5&8=      "'"  BOX COLOR"'" C=CANCEL    "'" ENTER=FINISH"'" SPACE=ON/OFF";AT 21,1;" 0=ALL OFF"
- 7140 PRINT AT 12,24;"EDITING": RETURN 
- 7150 BEEP 0.01,10: PAUSE 0: LET z$=INKEY$
- 7151 IF z$="y" THEN LET k$="[": RETURN 
- 7152 IF z$="u" THEN LET k$="]": RETURN 
- 7153 IF z$="p" THEN LET k$="\*": RETURN 
- 7154 IF z$="d" THEN LET k$="\\": RETURN 
- 7155 IF z$="f" THEN LET k$="{": RETURN 
- 7156 IF z$="g" THEN LET k$="}": RETURN 
- 7157 RETURN 
+ 7130 PRINT AT 11,1; INVERSE 1;"EDIT MODE"; INVERSE 0'" a=UP   or "'" z=DOWN arrow"'" k=LEFT keys "'" l=RIGHT     "'" r=Copy bits"'"   from ROM  "'" c=CANCEL    "'" ENTER=FINISH"'" SPACE=ON/OFF";AT 21,1;" 0=ALL OFF  "
+ 7140 PRINT AT 12,24;"EDITING";AT 20,23;"FG: 5-+8";AT 21,23;"BG: 6-+7": RETURN 
+ 7150 REM After shift+symbol     shift, wait for key to get to   symbols under keys
+ 7151 BEEP 0.01,10: PAUSE 0: LET z$=INKEY$
+ 7152 IF z$="y" THEN LET k$="[": RETURN 
+ 7153 IF z$="u" THEN LET k$="]": RETURN 
+ 7154 IF z$="p" THEN LET k$="\*": RETURN 
+ 7155 IF z$="d" THEN LET k$="\\": RETURN 
+ 7156 IF z$="f" THEN LET k$="{": RETURN 
+ 7157 IF z$="g" THEN LET k$="}": RETURN 
+ 7159 RETURN 
  7200 FOR a=11 TO 21: PRINT AT a,1;"            ": NEXT a: RETURN 
  8010 POKE 23606,0: POKE 23607,60: RETURN : REM Switch to ROM font
  8020 POKE 23606,l: POKE 23607,h: RETURN : REM Switch to alt font

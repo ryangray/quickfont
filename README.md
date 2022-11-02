@@ -8,9 +8,15 @@ from a listing made on the TS 2040 thermal printer that I kept with lots of
 other printouts for many years. I then started to fix a few bugs and make
 improvements all these years later.
 
-This is version 2.0 pretty much as it was in the printed listing with a few 
-flaws. This is probably not the last version I made, but it will be later on 
-before I get to resurrecting files from my old tapes.
+This is version 2.0a where I started to make improvements and fix a few issues.
+It adds foreground color changing for the preview box and shortcuts for 
+selecting most of the extended mode characters. It also adds using the arrow 
+keys to move the edit cursor around, mostly since emulators map the arrow keys 
+to the Sinclair cursor keys (shifted 5 to 8).
+
+Version 2.0 was pretty much as it was in the printed listing with a few flaws
+and probably not the last version I made, but it will be a while before I get to
+resurrecting files from my old tapes.
 
 --- Ryan Gray
 
@@ -91,7 +97,9 @@ extended mode letter, except you don't have to hold down `Symbol Shift`. This
 applies to the symbols `[`, `]', `\`, `{`, `}`, and the copyright symbol, each 
 under the keys `y`, `u`, `d`, `f`, `g`, and `p`, respectively. This entry system 
 also applies to typing in *Test Mode*. Pressing any other key cancels the 
-temporary mode.
+temporary mode. In view mode only, you can actually just press `symbol shift` 
+and the letter, except for `p`, to get the character since these keys have 
+word tokens for their regular *symbol shift*.
 
 Note that the tilde `~` and vertical bar `|` don't appear on the TS 2068 
 keyboard because these were replaced with the keywords `FREE` and `STICK`, and
@@ -113,17 +121,21 @@ bar characters in the same mode.
 
 The keys in view mode are:
 
-    Key           Function
+    Key            Function
 
-    Enter         Go into edit mode for the current character
-    Shift+6       Save the font to tape
-    Shift+7       Load a font from tape
-    Shift+5 or 8  Change the preview box background color
-    Shift+9       Enter the test mode to type with the font
-    STOP          Quit the program
-    Shift+Symbol  Enter a one-keypress extended mode to get the characters
-          Shift     [ ] \ { } and copyright by then pressing y u d f g or p
-    Other keys    Views that character
+    Enter          Go into edit mode for the current character
+    Shift+3        Save the font to tape
+    Shift+4        Load a font from tape
+    Shift+5 or 8   Change the preview box background color
+    Shift+6 or 7   Change the preview box foreground color
+    Shift+9        Enter the test mode to type with the font
+    STOP           Quit the program
+    Shift+Symbol   Enter a one-keypress extended mode to get the characters
+          Shift      [ ] \ { } and copyright by then pressing y u d f g or p
+    SymbolShift+   Shortcuts to enter [ ] \ { }
+      y u d f g
+    SymbolShift+q  Copy the ROM font over the user font (with  confirmation)
+    Other keys     Views that character
 
 ## Edit Mode
 
@@ -141,10 +153,13 @@ The keys in edit mode are:
 
     a and z    Move edit cursor up and down
     k and l    Move edit cursor left and right
+    Arrow keys Also for edit cursor movement
     space      Toggle bit on/off
-    5 and 8    Change preview box color
+    5 and 8    Change preview box background color
+    6 and 7    Change preview box foreground color
     0          Clear all bits (with confirmation)
-    r          Copy bits from the ROM character (with confirmation)
+    r          Copy bits from the ROM character with confirmation
+    R		   Copy bits from the ROM character without confirmation
     c          Cancel edits and go to view mode
     Enter      Save edits and go to view mode
     
