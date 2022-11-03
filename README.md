@@ -8,16 +8,6 @@ from a listing made on the TS 2040 thermal printer that I kept with lots of
 other printouts for many years. I then started to fix a few bugs and make
 improvements all these years later.
 
-This is version 2.0a where I started to make improvements and fix a few issues.
-It adds foreground color changing for the preview box and shortcuts for 
-selecting most of the extended mode characters. It also adds using the arrow 
-keys to move the edit cursor around, mostly since emulators map the arrow keys 
-to the Sinclair cursor keys (shifted 5 to 8).
-
-Version 2.0 was pretty much as it was in the printed listing with a few flaws
-and probably not the last version I made, but it will be a while before I get to
-resurrecting files from my old tapes.
-
 --- Ryan Gray
 
 ## User Fonts
@@ -240,3 +230,28 @@ You could also do these operations in your own program to have it use your font.
 Just be aware that the `CLEAR` command with a memory address also does clear the 
 variables like the regular `CLEAR` command, so you will need to do that at the 
 beginning of your program before setting variables.
+
+## Revision History
+
+### Version 2.0 - 4 September 1985
+This was pretty much as it was in the printed listing with a few flaws and 
+probably not the last version I made, but it will be a while before I get to
+resurrecting files from my old tapes.
+
+### Version 2.0a - 6 June 2022
+I started to make improvements and fix a few issues.
+It adds foreground color changing for the preview box and shortcuts for 
+selecting most of the extended mode characters. It also adds using the arrow 
+keys to move the edit cursor around, mostly since emulators map the arrow keys 
+to the Sinclair cursor keys (shifted 5 to 8).
+
+### Version 2.1 - 11 June 2022
+I started to change the look a bit more. I don't remember why I used uppercase 
+so much; it gave it a ZX81 look. I think I didn't like the lowercase in the 
+Sinclair font very much, so was avoiding it whereas everyone else was mad about 
+it since it was new and not too many micros at the time had lowercase.
+
+Several small changes, including improvements to the exit screen saying how to 
+use the font. I better optimized the edit key loop to make it more responsive.
+An improvement in test mode when typing near the end of a line or bottom of the 
+screen.

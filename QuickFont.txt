@@ -1,13 +1,16 @@
-    1 REM   QUICKFONT 2
+    1 REM  QUICKFONT 2.1
     2 REM 
-    3 REM   BY RYAN GRAY
+    3 REM  BY RYAN GRAY
     4 REM 
-    5 REM   SEPTEMBER 4,1985
-    6 REM 
-    7 CLEAR 64600-1
-    8 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
-    9 POKE 23658,0: REM NO CAPS
-   10 LET fc=0: LET bc=7: LET c$="A"
+    5 REM  v2.0 September 4,1985
+    6 REM  v2.1     June 11,2022
+    7 REM 
+    8 CLEAR 64600-1
+    9 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
+   10 POKE 23658,0: REM NO CAPS
+   11 LET fc=0: LET bc=7: LET c$="A"
+   12 DIM a$(8,8): DIM d(8): DIM e(8)
+   13 GO SUB 8010: REM ROM font
    20 GO SUB 7000: REM BaseScreen
    21 GO SUB 7100: REM View menu
    22 GO SUB 55: REM Bytes into d
@@ -27,18 +30,17 @@
    41 IF k$=" AND " THEN LET k$="["
    42 IF k$=" OR " THEN LET k$="]"
    43 IF k=14 THEN GO SUB 7150: REM Ext. char.
-   44 IF k$="<=" THEN INPUT "CONFIRM COPY ROM FONT (Y/N)";z$: PAUSE 30: IF z$="y" THEN GO SUB 450: REM Copy all ROM font chars
+   44 IF k$="<=" THEN INPUT "Confirm copy ROM font (y/n)";z$: PAUSE 30: IF z$="y" THEN GO SUB 450: GO TO 20
    45 IF k=10 THEN GO SUB 7070: REM fc-
    46 IF k=11 THEN GO SUB 7080: REM fc+
    48 IF k$>=" " AND k$<="\*" THEN LET c$=k$: GO SUB 7040: GO SUB 55: GO SUB 60: GO SUB 70
    49 GO TO 30
    54 REM Set cad & load bytes
    55 LET cad=ad+8*(CODE c$-32): REM Char. addr.
-   56 DIM d(8): DIM e(8)
-   57 FOR a=1 TO 8: LET d(a)=PEEK (cad+a-1): LET e(a)=d(a): NEXT a
+   57 FOR a=1 TO 8: LET d(a)=PEEK (cad+a-1): NEXT a
    58 RETURN 
    59 REM Decode char bits into a$
-   60 DIM a$(8,8): FOR a=1 TO 8: LET x=d(a): IF x>127 THEN LET a$(a,1)="\::": LET x=x-128
+   60 FOR a=1 TO 8: LET x=d(a): LET a$(a)="": IF x>127 THEN LET a$(a,1)="\::": LET x=x-128
    61 IF x>63 THEN LET a$(a,2)="\::": LET x=x-64
    62 IF x>31 THEN LET a$(a,3)="\::": LET x=x-32
    63 IF x>15 THEN LET a$(a,4)="\::": LET x=x-16
@@ -53,6 +55,7 @@
    72 RETURN 
    90 REM Edit
    91 GO SUB 55: REM Load bits
+   92 FOR a=1 TO 8: LET e(a)=d(a): NEXT a: REM save for cancel
    95 GO SUB 7130: REM Edit menu
   100 LET r=1: LET c=1
   101 PRINT AT 11+r,13+c; OVER 1;"+"
@@ -61,12 +64,12 @@
   104 IF k$=" " THEN LET a$(r,c)=(" " AND a$(r,c)="\::")+("\::" AND a$(r,c)=" "): GO TO 200
   105 LET xr=r: LET xc=c: LET r=r+((k$="z" OR k=10) AND r<8)-((k$="a" OR k=11) AND r>1): LET c=c+((k$="l" OR k=9) AND c<8)-((k$="k" OR k=8) AND c>1)
   106 PRINT AT 11+xr,13+xc; PAPER 7;a$(xr,xc)
-  107 IF k$="0" THEN INPUT "CONFIRM CLEAR ALL BITS (Y/N)";z$: PAUSE 30: IF z$="y" THEN GO TO 300: REM Clear all bits
+  107 IF k$="0" THEN INPUT "Confirm clear all bits (y/n)";z$: PAUSE 30: IF z$="y" THEN GO TO 300
   108 IF k$="5" THEN GO SUB 7050
   109 IF k$="8" THEN GO SUB 7060
   110 IF k$="6" THEN GO SUB 7070
   111 IF k$="7" THEN GO SUB 7080
-  112 IF k$="r" THEN INPUT "CONFIRM COPY FROM ROM (Y/N)";z$: PAUSE 30: IF z$="y" THEN GO TO 400: REM Copy ROM bits
+  112 IF k$="r" THEN INPUT "Confirm copy from ROM (y/n)";z$: PAUSE 30: IF z$="y" THEN GO TO 400: REM Copy ROM bits
   113 IF k$="R" THEN GO TO 400: REM Copy w/o confirm
   119 GO TO 101
   200 IF a$(r,c)=" " THEN POKE cad+r-1,PEEK (cad+r-1)-2^(8-c)
@@ -83,15 +86,19 @@
   416 GO SUB 7040: REM Print char
   420 GO TO 101
   450 REM Copy ROM font
+  451 PRINT #0;"Copying ROM font...";
   452 FOR a=1 TO 768: POKE ad+a-1,PEEK (15616+a-1): NEXT a
+  453 INPUT ""
   454 RETURN 
   500 REM Quit program
-  502 PAPER 0: INK 7: CLS 
-  504 PRINT AT 9,1;"TO USE NEW FONT:"''
+  501 PAPER 7: INK 0: BORDER 7: CLS 
+  502 PRINT "To use the font now, enter:"''" GO SUB 8020"''"while the QuickFont progam is"'"still loaded."
+  504 PRINT '"To load and use a saved font:"''
   505 PRINT " CLEAR ";ad-1
-  506 PRINT " LOAD """"CODE ";ad;",768"'
+  506 PRINT " LOAD """"CODE ";ad;",768"
   508 PRINT " POKE 23606,";l;": POKE 23607,";h
-  509 STOP 
+  509 PRINT '"To revert to the ROM font:"''" POKE 23606,0: POKE 23607,60"
+  510 STOP 
   900 REM Cancel
   901 PRINT #0; FLASH 1;" EDIT CANCELED  "
   902 FOR a=1 TO 8: POKE cad+a-1,e(a): NEXT a
@@ -101,37 +108,39 @@
  4010 PAPER 0: INK 7: CLS 
  4020 INPUT "PAPER COLOR:";p: PAPER p: BORDER p: CLS 
  4021 INPUT "INK COLOR:";p: INK p
- 4030 PRINT AT 0,0;"\::  BEGIN TYPING, PRESS ""STOP"" TOEND.";AT 0,0;
+ 4030 PRINT AT 20,0;"Begin typing."'"Press ""STOP"" to end.";
+ 4032 PRINT AT 0,0;"\::";AT 0,0;
  4035 GO SUB 8020: REM Alt font
- 4040 PAUSE 0: LET k$=INKEY$
- 4045 IF CODE k$=14 THEN GO SUB 7150
- 4046 IF CODE k$=12 THEN PRINT CHR$ 8;"\:: ";CHR$ 8;CHR$ 8;
- 4047 IF k$>=" " AND k$<="\*" THEN PRINT k$;"\::";CHR$ 8;
+ 4040 PAUSE 0: LET k$=INKEY$: LET k=CODE k$
+ 4042 IF k=13 AND PEEK 23689>3 THEN PRINT " "'"\::";CHR$ 8;: BEEP 0.01,5
+ 4045 IF k=14 THEN GO SUB 7150
+ 4046 IF k=12 THEN PRINT CHR$ 8;"\:: ";CHR$ 8;CHR$ 8;
+ 4047 IF k$>=" " AND k$<="\*" AND (PEEK 23689>3 OR PEEK 23688>2) THEN PRINT k$;"\::";CHR$ 8;
  4048 IF k$=" STOP " THEN GO SUB 8010: GO TO 20
  4050 BEEP 0.01,0: GO TO 4040
  5000 REM Save
  5010 GO SUB 7200
- 5020 PRINT AT 11,1; INVERSE 1;"SAVE MODE"; INVERSE 0''" ENTER FILE"'" NAME TO SAVE"'" OR NONE"'" TO ABORT."
+ 5020 PRINT AT 11,1; INVERSE 1;"SAVE MODE"; INVERSE 0''" Enter file"'" name to save"'" (<=10 chars)"'" or none"'" to cancel."
  5029 INPUT f$
- 5030 IF f$="" OR LEN f$>10 THEN PRINT #0; FLASH 1;" SAVE ABORTED ": PAUSE 120: INPUT "": GO TO 21
+ 5030 IF f$="" OR LEN f$>10 THEN PRINT #0; FLASH 1;" SAVE CANCELED ": PAUSE 120: INPUT "": GO TO 21
  5040 SAVE f$CODE ad,768
- 5050 GO SUB 7200: PRINT AT 11,1; INVERSE 1;"SAVE DONE"; INVERSE 0''" DO YOU WANT"'" TO VERIFY"'" THE FILE?"'" Y/N"
+ 5050 GO SUB 7200: PRINT AT 11,1; INVERSE 1;"SAVE DONE"; INVERSE 0''" Do you want"'" to verify"'" the file?"'" y/n"
  5060 INPUT k$: IF k$<>"y" THEN GO TO 21
- 5070 GO SUB 7200: PRINT AT 11,1;"REWIND AND"'" PLAY THE "'" TAPE TO"'" VERIFY."
+ 5070 GO SUB 7200: PRINT AT 11,1;"Rewind and"'" play the "'" tape to"'" verify."
  5075 PRINT AT 0,0;
  5080 VERIFY f$CODE ad,768
  5090 PRINT #0; FLASH 1;" FILE OK ": PAUSE 120: INPUT "": GO TO 20
  6000 REM Load
  6010 GO SUB 7200
- 6020 PRINT AT 11,1; INVERSE 1;"LOAD MODE"; INVERSE 0''" INPUT FILE"'" NAME TO"'" LOAD OR"'" ""STOP"" TO"'" ABORT."
- 6030 INPUT f$: IF f$=" STOP " THEN PRINT #0; FLASH 1;" LOAD ABORTED ": PAUSE 120: INPUT "": GO TO 21
- 6040 GO SUB 7200: PRINT AT 11,1;"PLAY TAPE"'" NOW TO"'" LOAD."
+ 6020 PRINT AT 11,1; INVERSE 1;"LOAD MODE"; INVERSE 0''" Input file"'" name to"'" load or"'" ""STOP"" to"'" cancel."
+ 6030 INPUT f$: IF f$=" STOP " THEN PRINT #0; FLASH 1;" LOAD CANCELED ": PAUSE 120: INPUT "": GO TO 21
+ 6040 GO SUB 7200: PRINT AT 11,1;"Play tape"'" now to"'" load."
  6045 PRINT AT 0,0;
  6050 LOAD f$CODE ad,768
  6060 GO SUB 7000: GO TO 21
  7000 REM BASE SCREEN
  7010 INK 0: PAPER 4: FLASH 0: OVER 0: INVERSE 0: BRIGHT 0: BORDER 0: CLS 
- 7011 PRINT AT 0,0; PAPER 7;" QUICKFONT 2       BY RYAN GRAY "
+ 7011 PRINT AT 0,0; PAPER 7;" QUICKFONT         BY RYAN GRAY "
  7012 PLOT 0,167: DRAW 255,0: REM Top black line
  7020 PLOT 3,175: DRAW -1,0: DRAW -1,-1: DRAW 0,1: DRAW -1,0: DRAW 0,-3: REM TL corner
  7021 PLOT 252,175: DRAW 1,0: DRAW 1,-1: DRAW 0,1: DRAW 1,0: DRAW 0,-3: REM TR corner
