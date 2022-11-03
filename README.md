@@ -121,9 +121,9 @@ The keys in view mode are:
     Shift+9        Enter the test mode to type with the font
     STOP           Quit the program
     Shift+Symbol   Enter a one-keypress extended mode to get the characters
-          Shift      [ ] \ { } and copyright by then pressing y u d f g or p
-    SymbolShift+   Shortcuts to enter [ ] \ { }
-      y u d f g
+          Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
+    SymbolShift+   Shortcuts to enter the characters: [ ] ~ | \ { }
+     y u a s d f g
     SymbolShift+q  Copy the ROM font over the user font (with  confirmation)
     Other keys     Views that character
 
@@ -149,8 +149,8 @@ The keys in edit mode are:
     6 and 7    Change preview box foreground color
     0          Clear all bits (with confirmation)
     r          Copy bits from the ROM character with confirmation
-    R		   Copy bits from the ROM character without confirmation
-    c          Cancel edits and go to view mode
+    R		       Copy bits from the ROM character without confirmation
+    c or Edit  Cancel edits and go to view mode
     Enter      Save edits and go to view mode
     
 When you save changes to a character, the updated character will then appear in  
@@ -259,3 +259,20 @@ screen.
 ### Version 2.1a - 26 June 2022
 Further optimization of the edit key loop to make it much better than the last 
 improvement.
+
+### Version 2.2 - 13 August 2022
+First introduction of machine code to help speed some things up. This included
+copying the ROM font and decoding the character bytes into bits to make the
+magnified array of pixels. The latter took some playing around given how the 
+system variable `DEST` behaved to be able to capture the address of the a$ 
+character array. The machine code is loaded from a hex string into a padded line 
+1 REM statement rather than into high memory which allows a NEW to get rid of 
+the BASIC program and leave just the font. The machine code was generated with
+the *z80asm* assembler from `mcode.asm`, then I entered the hex codes into my 
+loader string.
+
+Switched to using key codes for checking in key loops since quoted tokens get
+converted to text by *listbasic* and don't convert back with *ZMakeBAS*. Added 
+initial specialization for the ZX Spectrum to show the tilde and vertical bar
+characters in the font display and keyboard selection of them. Refined the view 
+and edit menus.
