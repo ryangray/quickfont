@@ -255,3 +255,7 @@ Several small changes, including improvements to the exit screen saying how to
 use the font. I better optimized the edit key loop to make it more responsive.
 An improvement in test mode when typing near the end of a line or bottom of the 
 screen.
+
+### Version 2.1a - 26 June 2022
+Further optimization of the edit key loop to make it much better than the last 
+improvement.

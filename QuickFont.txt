@@ -1,9 +1,9 @@
-    1 REM  QUICKFONT 2.1
+    1 REM  QUICKFONT 2.1a
     2 REM 
     3 REM  BY RYAN GRAY
     4 REM 
     5 REM  v2.0 September 4,1985
-    6 REM  v2.1     June 11,2022
+    6 REM  v2.1a    June 26,2022
     7 REM 
     8 CLEAR 64600-1
     9 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
@@ -58,12 +58,12 @@
    92 FOR a=1 TO 8: LET e(a)=d(a): NEXT a: REM save for cancel
    95 GO SUB 7130: REM Edit menu
   100 LET r=1: LET c=1
-  101 PRINT AT 11+r,13+c; OVER 1;"+"
+  101 LET b$=a$(r,c): PRINT AT 11+r,13+c;b$;AT 11+r,13+c; OVER 1;"+"
   102 LET k$=INKEY$: LET k=CODE k$: IF k$="c" THEN GO TO 900
   103 IF k=13 THEN GO SUB 7032: GO TO 21: REM Exit edit
-  104 IF k$=" " THEN LET a$(r,c)=(" " AND a$(r,c)="\::")+("\::" AND a$(r,c)=" "): GO TO 200
+  104 IF k$=" " THEN GO TO 200
   105 LET xr=r: LET xc=c: LET r=r+((k$="z" OR k=10) AND r<8)-((k$="a" OR k=11) AND r>1): LET c=c+((k$="l" OR k=9) AND c<8)-((k$="k" OR k=8) AND c>1)
-  106 PRINT AT 11+xr,13+xc; PAPER 7;a$(xr,xc)
+  106 PRINT AT 11+xr,13+xc; PAPER 7;b$
   107 IF k$="0" THEN INPUT "Confirm clear all bits (y/n)";z$: PAUSE 30: IF z$="y" THEN GO TO 300
   108 IF k$="5" THEN GO SUB 7050
   109 IF k$="8" THEN GO SUB 7060
@@ -72,9 +72,10 @@
   112 IF k$="r" THEN INPUT "Confirm copy from ROM (y/n)";z$: PAUSE 30: IF z$="y" THEN GO TO 400: REM Copy ROM bits
   113 IF k$="R" THEN GO TO 400: REM Copy w/o confirm
   119 GO TO 101
-  200 IF a$(r,c)=" " THEN POKE cad+r-1,PEEK (cad+r-1)-2^(8-c)
-  201 IF a$(r,c)="\::" THEN POKE cad+r-1,PEEK (cad+r-1)+2^(8-c)
-  202 GO SUB 7040: GO TO 102
+  200 IF b$="\::" THEN LET a$(r,c)=" ": LET d(r)=d(r)-2^(8-c): GO TO 202
+  201 IF b$=" " THEN LET a$(r,c)="\::": LET d(r)=d(r)+2^(8-c)
+  202 POKE cad+r-1,d(r)
+  203 GO SUB 7040: GO TO 101
   300 REM Clear
   310 FOR a=1 TO 8: LET a$(a)="": POKE cad+a-1,0: NEXT a
   320 GO SUB 60: GO SUB 70
