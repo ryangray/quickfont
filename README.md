@@ -160,31 +160,31 @@ the user font shown in the top half of the screen.
 
 ![Test mode display](TestMode.png)
 
-Pressing `shift`+`9` in view mode takes you to test mode which lets you type using 
-the user font. It first asks you what paper and ink colors to use. You can then 
-type away for multiple lines as well as use the delete key to bacspace. Then 
-press `STOP` (`symbol shift` + `a`) to quit and return to the view mode.
+Pressing `shift`+`9` in view mode takes you to test mode which lets you type 
+using the user font. It first asks you what paper and ink colors to use. You can 
+then type away for multiple lines as well as use the delete key to bacspace. 
+Then press `STOP` (`symbol shift` + `a`) to quit and return to the view mode.
 
 You can access the extended mode characters here just like you do in view mode
 as described above.
 
 ## Loading
 
-Pressing `shift`+`7` in view mode lets you load a font from tape previously saved as 
-a code block by this program or manually. It should be a code block of 768 
-bytes, but it doesn't have to be from the same address as it will be loaded into 
-the address the program is currently using for the user font.
+Pressing `shift`+`7` in view mode lets you load a font from tape previously 
+saved as a code block by this program or manually. It should be a code block of 
+768 bytes, but it doesn't have to be from the same address as it will be loaded 
+into the address the program is currently using for the user font.
 
 It prompts you for the name of the file on tape, but you can just leave it blank 
 and just press enter to load the next code block on the tape. For running in an
 emulator, you may need to mount a different tape file. To not load a file, enter
-the keyword `STOP` as the name by pressing `Symbol Shift` + `a` then `enter`, and you 
-will return to the view mode.
+the keyword `STOP` as the name by pressing `Symbol Shift` + `a` then `enter`, 
+and you will return to the view mode.
 
 ## Saving
 
-Pressing `shift`+`6` in view mode lets you save the current user font to tape. It 
-will prompt you for a file name to give it. You can enter nothing to cancel 
+Pressing `shift`+`6` in view mode lets you save the current user font to tape. 
+It will prompt you for a file name to give it. You can enter nothing to cancel 
 saving and return to the view mode. The font will be saved to tape as a code 
 block of 768 bytes from the address 64600. This can be loaded later, and the
 address it loads to can be changed as with loading any code block by giving the
@@ -213,14 +213,15 @@ The example uses the typical location of 64600:
 3. Activate the font by setting the `CHARS` system variable. This is a two-byte
    variable since it specifies a memory address, and thus needs two `POKE` 
    commands to set. If done manually, you should do this with a multiple 
-   statement line of two `POKE` commands, otherwise, you set one of the bytes, and 
-   the font pointer immediately changes, making the next command very hard to 
-   enter since you won't be able to read what you are typing.
+   statement line of two `POKE` commands, otherwise, you set one of the bytes, 
+   and the font pointer immediately changes, making the next command very hard 
+   to enter since you won't be able to read what you are typing.
    
         POKE 23606,88: POKE 23607,251
     
    This causes the `CHARS` system variable to point to store the address 
-   `88+256*251`, which is 64344. This is the actual address of the font, 64600, minus 256 bytes as previously explained.
+   `88+256*251`, which is 64344. This is the actual address of the font, 64600, 
+   minus 256 bytes as previously explained.
    
 After creating a font (and saving it), when you quit the program, you can do 
 these POKEs to activate the font still in memory. You can then give the NEW 
@@ -276,3 +277,12 @@ converted to text by *listbasic* and don't convert back with *ZMakeBAS*. Added
 initial specialization for the ZX Spectrum to show the tilde and vertical bar
 characters in the font display and keyboard selection of them. Refined the view 
 and edit menus.
+
+### Version 2.2b - 14 August 2022
+This changed the MC to not have to poke the number of bytes and addresses for 
+the mcopy routine in favor of just copying the 8 bytes for the selected 
+character using PEEKs and using a short MC routine that copies the whole ROM 
+font. Now the character offset and a$ location are just POKEd into the MC where
+the addresses are used since they are now only referenced once. Changed the MC
+loader to print all the hex digits then invert each pair as it loads the bytes
+to give a progress bar effect. 

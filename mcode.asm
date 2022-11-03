@@ -1,28 +1,35 @@
+ROMFONT:	equ 0x3D00;	Start address of the ROM font
+DEST:		equ 23629;	The DEST system variable (2 bytes)
+
 org 0x685B
 
-ROMFONT:	equ 0x3D00;	Start address of the ROM font
-DEST:		equ 23629;	The DEST system variable
-
 USERFONT: 	defb 0xFC,0x58; Address of user font
-OFFS: 		defb 0x00,0x00; Offset of start of copy (usu. current char.)
-BLEN: 		defb 0x00,0x00; Number of bytes to copy
+OFFS: 		defb 0x00,0x00; Offset of current char in font data
 DESTA:		defb 0x00,0x00; Address of a$ array
 
-; Copyn copies BLEN bytes from ROMFONT+OFFS to USERFONT+OFFS.
-; The BASIC program pokes the user font address into USERFONT. The
-; ROM font copy routine pokes the BLEN as 768 (0x00,0x03) and OFFS
-; as 0. The character copy pokes the BLEN as 8 (0x08,0x00) and 
-; the byte offset of the character into OFFS.
-; I should probably just make two separate routines.
- 
-Copyn:	ld hl,(USERFONT)
+; Copy1 copies the 8 bytes for the current character from ROMFONT+OFFS 
+; to USERFONT+OFFS. The BASIC program pokes the user font address into 
+; USERFONT at startup and the offset into OFFS when the current char
+; is selected.
+
+Copy1:	ld hl,(USERFONT)
 	ld bc, (OFFS)
 	add hl,bc
 	ld d,h
 	ld e,l
 	ld hl, ROMFONT
 	add hl,bc
-	ld bc,(BLEN)
+	ld bc,8
+	ldir
+	ret
+
+; CopyAll copies 768 bytes from ROMFONT to USERFONT. 
+
+CopyAll:ld hl,(USERFONT)
+	ld d,h
+	ld e,l
+	ld hl, ROMFONT
+	ld bc, $0300
 	ldir
 	ret
 
@@ -46,7 +53,9 @@ Copyn:	ld hl,(USERFONT)
 ;    LET a$(1,1)=" "
 ; This makes a$ the variable in assignment just before the PEEK, storing
 ; the byte in a$(1,1) as a character which we then separately decode into
-; another variable.
+; another variable. The final trick is that the address of a$ can move 
+; during program execution if new vars are made, so you need to update 
+; this address before you call the Decode routine.
 
 Decode:	ld hl,(USERFONT)
 	ld bc,(OFFS)

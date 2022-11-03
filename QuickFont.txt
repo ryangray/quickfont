@@ -1,9 +1,9 @@
-    1 REM xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    2 REM  QUICKFONT 2.2
+    1 REM xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    2 REM  QUICKFONT 2.2b
     3 REM  BY RYAN GRAY
     4 REM 
     5 REM  v2.0 September 4,1985
-    6 REM  v2.2   August 13,2022
+    6 REM  v2.2b  August 14,2022
     7 REM 
     8 CLEAR 64600-1
     9 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
@@ -12,8 +12,7 @@
    12 DIM a$(8,8): DIM d(8): DIM e(8)
    13 GO SUB 80: REM ROM font
    14 GO SUB 9100: REM Set mc vars
-   15 IF PEEK mcopy<>42 THEN PRINT "Loading machine code": GO SUB 9000
-   16 GO SUB 9200: REM Set ufont
+   15 IF PEEK decode<>42 THEN PRINT "Loading machine code": GO SUB 9000
    17 GO SUB 700: REM Set desta
    20 GO SUB 7000: REM BaseScreen
    21 GO SUB 7100: REM View menu
@@ -46,7 +45,9 @@
    58 POKE offs,lo: POKE offs+1,ho: RETURN 
    59 REM Decode char bits into a$
    60 GO SUB 700: REM Update a$ addr. in desta
-   61 RANDOMIZE USR decode
+   61 GO SUB 81: REM User font
+   62 RANDOMIZE USR decode
+   63 GO SUB 80: REM ROM font
    69 RETURN 
    70 REM Print a$
    71 FOR a=1 TO 8: PRINT AT 11+a,14; PAPER 7;a$(a): NEXT a
@@ -67,7 +68,7 @@
   102 LET k$=INKEY$: LET k=CODE k$: IF k$="" THEN GO TO 102
   103 IF k$="c" OR k=7 THEN GO TO 900
   104 IF k=13 THEN GO SUB 7032: GO TO 21: REM Exit edit
-  105 IF k$=" " THEN GO TO 200
+  105 IF k$=" " OR k$="b" THEN GO TO 200
   106 LET xr=r: LET xc=c: LET r=r+((k$="z" OR k=10) AND r<8)-((k$="a" OR k=11) AND r>1): LET c=c+((k$="l" OR k=9) AND c<8)-((k$="k" OR k=8) AND c>1)
   107 IF xr<>r OR xc<>c THEN PRINT AT 11+xr,13+xc; PAPER 7;b$
   108 IF k$="0" THEN GO SUB 300
@@ -97,15 +98,16 @@
   449 REM Copy ROM font
   450 INPUT "Confirm copy ROM font (y/n)";z$: PAUSE 30: IF z$<>"y" THEN RETURN 
   451 PRINT #0;"Copying ROM font...";
-  452 GO SUB 460: GO TO 453: FOR a=0 TO 767: POKE ad+a,PEEK (15616+a): NEXT a
-  453 INPUT ""
-  454 GO SUB 7032: REM Redraw user font
-  455 LET k$=c$: REM Force current char reload
-  456 RETURN 
-  460 POKE blen,0: POKE blen+1,3
-  461 POKE offs,0: POKE offs+1,0
-  462 RANDOMIZE USR mcopy
-  463 RETURN 
+  452 GO SUB 81: REM User font
+  453 RANDOMIZE USR copyall
+  454 INPUT ""
+  455 GO SUB 7032: REM Redraw user font
+  456 LET k$=c$: REM Force current char reload
+  459 RETURN 
+  460 FOR a=0 TO 767
+  462 POKE ad+a,PEEK (15616+a)
+  464 NEXT a
+  466 GO TO 454
   500 REM Quit program
   501 PAPER 7: INK 0: BORDER 7: CLS 
   502 PRINT "To use the font now, enter:"''" GO SUB 81"''"while the QuickFont progam is"'"still loaded. For ROM font use:"'" GO SUB 80"
@@ -191,57 +193,54 @@
  7080 LET fc=fc+1: IF fc=8 THEN LET fc=0
  7081 GO TO 7039
  7100 REM VIEW MENU
- 7110 PRINT AT 11,0;" Press key to"'"  view char. "'" Enter  :EDIT"'" Shift+3:SAVE"'" Shift+4:LOAD"'" Shift+9:TEST"'" Stop   :EXIT"'" <= :Copy ROM"'" Shift+SymbSh"'"  then yupdfg";AT 21,1;" gets []\*\\{}"
+ 7110 PRINT AT 11,0;" Press key to"'"  view char. "'" Enter  :EDIT"'" Shift+3:SAVE"'" Shift+4:LOAD"'" Shift+9:TEST"'" Stop   :EXIT"'" <= :Copy ROM"'" Shift+SymbSh"'
+ 7111 IF speccy THEN PRINT " then yupasdfg"'" gets []\*~|\\{}"
+ 7112 IF NOT speccy THEN PRINT " then yupdfg"'" gets []\*\\{}"
  7120 PRINT AT 12,24;"VIEWING";AT 20,23;"FG:^5-+8";AT 21,23;"BG:^6-+7": RETURN 
  7125 REM EDIT MENU
- 7130 PRINT AT 11,0;" a:UP   or   "'" z:DOWN arrow"'" k:LEFT keys "'" l:RIGHT     "'" r:Copy bits "'"   from ROM  "'" c:CANCEL    "'" Enter:FINISH"'" Space:ON/OFF"'" 0:ALL OFF   ";AT 21,1;"            "
+ 7130 PRINT AT 11,0;" a:UP   or   "'" z:DOWN arrow"'" k:LEFT keys "'" l:RIGHT     "'" r:Copy bits "'"   from ROM  "'" c:CANCEL    "'" Enter:FINISH"'" 0:ALL OFF   "'" Space:ON/OFF"'"  or b         "
  7140 PRINT AT 12,24;"EDITING";AT 20,23;"FG: 5-+8";AT 21,23;"BG: 6-+7": RETURN 
- 7150 REM After shift+symbol     shift, wait for key to get to   symbols under keys
- 7151 BEEP 0.01,10: PAUSE 0: LET z$=INKEY$: IF z$="a" THEN LET k$=CHR$ 126
- 7152 IF z$="y" THEN LET k$="["
- 7153 IF z$="u" THEN LET k$="]"
- 7154 IF z$="p" THEN LET k$="\*"
- 7155 IF z$="d" THEN LET k$="\\"
- 7156 IF z$="f" THEN LET k$="{"
- 7157 IF z$="g" THEN LET k$="}"
- 7158 IF z$="s" THEN LET k$=CHR$ 124: REM Chars 124 and 126 are really Spectum-only. Would need to make an MC print routine to show them on a TS2068. You can edit the bits but not see the chars.
- 7159 RETURN 
+ 7150 BEEP 0.01,10: REM After shift+symbol     shift, wait for key to get to   symbols under keys
+ 7151 LET z$=INKEY$: IF z$="" OR z$=CHR$ 14 THEN GO TO 7151
+ 7152 IF z$="a" THEN LET k$=CHR$ 126
+ 7153 IF z$="y" THEN LET k$="["
+ 7154 IF z$="u" THEN LET k$="]"
+ 7155 IF z$="p" THEN LET k$="\*"
+ 7156 IF z$="d" THEN LET k$="\\"
+ 7157 IF z$="f" THEN LET k$="{"
+ 7158 IF z$="g" THEN LET k$="}"
+ 7159 IF z$="s" THEN LET k$=CHR$ 124
+ 7160 REM Chars 124 and 126 are really Spectrum-only. Would need to make an MC print routine to show them on a TS2068. You can edit the bits but not see the chars.
+ 7161 IF k$=CHR$ 14 THEN BEEP 0.01,0
+ 7162 RETURN 
  7200 FOR a=11 TO 21: PRINT AT a,1;"            ": NEXT a: RETURN 
- 8010 POKE 23606,0: POKE 23607,60: RETURN : REM Switch to ROM font
- 8020 POKE 23606,l: POKE 23607,h: RETURN : REM Switch to alt font
  9000 REM Load machine code into REM on first line
- 9001 LET h$="FC580000000000002A5B68ED4B5D6809545D21003D09ED4B5F68EDB0C9": REM 8 bytes data and mcopy
- 9002 LET h$=h$+"2A5B68ED4B5D6809545D2A61680608481A0608173004368F180236202310F4134110ECC9": REM decode
+ 9001 LET h$="2A365C2401FFFF09545D21FFFF0608481A0608173004368F180236202310F4134110ECC9": REM decode
+ 9002 LET h$=h$+"2A365C24545D21003D010003EDB0C9": REM copyall
  9011 IF PEEK (prog+4)<>234 THEN PRINT "First line not a REM line.": STOP 
  9012 LET b=PEEK (prog+2)+256*PEEK (prog+3): REM rem line length
  9013 LET bfree=b-2-LEN h$/2
  9014 IF bfree<0 THEN PRINT "REM line too short."'"Needs ";-bfree;" more, ";b-2-bfree;" total.": STOP 
  9016 LET i=prog+5
  9018 PRINT AT 0,0;"Loading machine code"
+ 9019 PRINT h$;AT 1,0;
  9020 FOR a=1 TO LEN h$ STEP 2
  9022 LET h1=CODE h$(a): LET h2=CODE h$(a+1)
  9024 LET x=16*(h1-(48 AND h1<65)-(55 AND h1>64 AND h1<97)-(87 AND h1>96))+(h2-(48 AND h2<65)-(55 AND h2>64 AND h2<97)-(87 AND h2>96))
- 9029 REM PRINT i;":";PEEK i;"->";x;"(";h$(a);h$(a+1);")"
- 9030 PRINT AT 1,0;h$(a TO a+1)
+ 9030 PRINT INVERSE 1;h$(a TO a+1);
  9031 POKE i,x
  9032 LET i=i+1
  9040 NEXT a
- 9045 PRINT bfree;" bytes remain"
+ 9045 PRINT 'bfree;" bytes remain"
  9049 RETURN 
  9100 REM Set MC data var addresses
  9101 LET prog=PEEK 23635+256*PEEK 23636: REM 26710, start of BASIC program
- 9102 LET ufont=prog+5: REM User font address var
- 9103 LET offs=prog+7: REM Char offset mc var
- 9104 LET blen=prog+9: REM Bytes to copy for mcopy
- 9105 LET desta=prog+11: REM Address of a$
- 9106 LET mcopy=prog+13: REM MC routine to copy bytes from rom font+offs to ufont+offs 
- 9107 LET decode=mcopy+21: REM Mc routine to decode cad to a$
+ 9102 LET decode=prog+5: REM Mc routine to decode cad to a$
+ 9103 LET offs=decode+5: REM Char offset mc var
+ 9105 LET desta=decode+11: REM Address of a$
+ 9106 LET copyall=decode+36: REM MC routine to copy bytes of rom font to userfont
  9110 CLS : PRINT CHR$ 126;: REM Tilde on a ZX Spectrum
  9111 LET speccy=0: REM Keyword FREE on a TS2068 prints 6 chars
  9112 IF PEEK 23688=32 THEN LET speccy=1: REM Only printed 1 char
  9113 CLS 
  9120 RETURN 
- 9200 REM Set ufont mc var
- 9201 POKE ufont,l
- 9202 POKE ufont+1,h+1
- 9203 RETURN 
