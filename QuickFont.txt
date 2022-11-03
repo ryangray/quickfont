@@ -1,13 +1,13 @@
     1 REM xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    2 REM  QUICKFONT 2.2d
-    3 REM  BY RYAN GRAY
+    2 REM  QUICKFONT 2.2e
+    3 REM  by Ryan Gray
     4 REM 
-    5 REM  v2.0 September 4,1985
-    6 REM  v2.2d  August 17,2022
+    5 REM v2.0  September  4,1985
+    6 REM v2.2e September 17,2022
     7 REM 
-    8 CLEAR 64600-1
-    9 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
-   10 POKE 23658,0: REM NO CAPS
+    8 LET ad=USR "a"-768: GO SUB 6200: IF ad>=rt1 THEN GO TO 10: REM Font addr already above BASIC
+    9 CLEAR ad-1: GO SUB 6200: LET ad=rt1
+   10 GO SUB 6250: POKE 23658,0: REM NO CAPS
    11 LET fc=0: LET bc=7: LET uf=0: LET ub=4: LET c$="A"
    12 DIM a$(8,8): DIM d(8): DIM e(8)
    13 GO SUB 80: REM ROM font
@@ -40,8 +40,8 @@
    48 IF k=195 THEN LET k$=CHR$ 124
    49 IF k=7 AND ub>1 THEN LET ub=ub-1: PAPER ub: LET uf=7 AND ub<2: GO SUB 7000: GO SUB 7100: GO SUB 70
    50 IF k=6 AND ub<7 THEN LET ub=ub+1: PAPER ub: LET uf=7 AND ub<2: GO SUB 7000: GO SUB 7100: GO SUB 70
-   51 IF k$>=" " AND k$<="\*" THEN LET c$=k$: GO SUB 82: GO SUB 55: GO SUB 60: GO SUB 70
-   52 GO TO 30
+   52 IF k$>=" " AND k$<="\*" THEN LET c$=k$: GO SUB 82: GO SUB 55: GO SUB 60: GO SUB 70
+   53 GO TO 30
    54 REM Set cad & load bytes
    55 LET co=8*(CODE c$-32): LET cad=ad+co: REM Char. offset/addr.
    56 LET ho=INT (co/256): LET lo=co-256*ho
@@ -93,14 +93,14 @@
   320 GO SUB 60: GO SUB 70: GO SUB 82
   330 RETURN 
   400 REM Copy ROM bits
-  402 INPUT "Confirm copy from ROM (y/n)";z$: PAUSE 30: IF z$<>"y" THEN RETURN 
+  402 INPUT "Copy ROM bits for "; INVERSE 1;VAL$ "c$"; INVERSE 0;" (y/n)?";z$: PAUSE 30: IF z$<>"y" THEN RETURN 
   410 FOR a=1 TO 8: LET d(a)=PEEK (15615+co+a): POKE cad+a-1,d(a): NEXT a
   412 GO SUB 60: REM d() to a$
   414 GO SUB 70: REM print a$
   416 GO SUB 82: REM Print char
   420 RETURN 
   449 REM Copy ROM font
-  450 INPUT "Confirm copy ROM font (y/n)";z$: PAUSE 30: IF z$<>"y" THEN RETURN 
+  450 INPUT "Replace with ROM font (y/n)?";z$: PAUSE 30: IF z$<>"y" THEN RETURN 
   451 PRINT #0;"Copying ROM font...";
   452 GO SUB 81: REM User font
   453 RANDOMIZE USR copyall
@@ -132,10 +132,8 @@
   903 PAUSE 60: INPUT ""
   904 GO SUB 7032: GO TO 21
  4000 REM Test
- 4010 PAPER ub: INK uf: BORDER ub: CLS 
- 4011 LET caps=0
- 4020 INPUT "TEST MODE"'"Paper color [";STR$ ub;"]:";p: PAPER p: BORDER p: CLS 
- 4021 INPUT "TEST MODE"'"Ink color [";STR$ uf;"]:";p: INK p
+ 4010 PAPER bc: INK fc: BORDER bc: CLS 
+ 4020 LET caps=0
  4030 PRINT AT 20,0;"Begin typing."'"Press ""STOP"" to end.";
  4032 PRINT AT 0,0;"\::";AT 0,0;
  4035 GO SUB 81: REM Alt font
@@ -167,6 +165,12 @@
  6045 PRINT AT 0,0;
  6050 LOAD f$CODE ad,768
  6060 GO SUB 7000: GO TO 21
+ 6200 REM RAMTOP+1 address
+ 6210 LET rt1=1+PEEK 23730+256*PEEK 23731
+ 6220 RETURN 
+ 6250 REM Set font addr h/l bytes
+ 6260 LET h=INT (ad/256)-1: LET l=ad-256*(h+1)
+ 6270 RETURN 
  7000 REM BASE SCREEN
  7010 INK 0: PAPER ub: FLASH 0: OVER 0: INVERSE 0: BRIGHT 0: BORDER 0: CLS 
  7011 PRINT AT 0,0; INK 0; PAPER 7;" QUICKFONT         BY RYAN GRAY "
@@ -201,7 +205,7 @@
  7112 IF NOT speccy THEN PRINT " then:yupdfg";AT 21,1;"gets:[]\*\\{}"
  7120 PRINT AT 12,24;"VIEWING";AT 20,23;"FG:^5-+8";AT 21,23;"BG:^6-+7": RETURN 
  7125 REM EDIT MENU
- 7130 PRINT AT 11,0;" a:UP   or   "'" z:DOWN arrow"'" k:LEFT keys "'" l:RIGHT     "'" r:Copy bits "'"   from ROM  "'" c:CANCEL    "'" Enter:FINISH"'" 0:ALL OFF   "'" Space:ON/OFF"'"  or b         "
+ 7130 PRINT AT 11,0;" a:UP   or   "'" z:DOWN arrow"'" k:LEFT keys "'" l:RIGHT     "'" r:Copy bits "'"   from ROM  "'" c:CANCEL    "'" Enter:FINISH"'" 0:ALL OFF   "'" Space:ON/OFF ";AT 21,1;" or b         "
  7140 PRINT AT 12,24;"EDITING";AT 20,23;"FG: 5-+8";AT 21,23;"BG: 6-+7": RETURN 
  7150 BEEP 0.01,10: REM After shift+symbol     shift, wait for key to get to   symbols under keys
  7151 LET z$=INKEY$: IF z$="" OR z$=CHR$ 14 THEN GO TO 7151
@@ -216,7 +220,7 @@
  7160 REM Chars 124 and 126 are really Spectrum-only. Would need to make an MC print routine to show them on a TS2068. You can edit the bits but not see the chars.
  7161 IF k$=CHR$ 14 THEN BEEP 0.01,0
  7162 RETURN 
- 7200 FOR a=11 TO 21: PRINT AT a,1;"            ": NEXT a: RETURN 
+ 7200 FOR a=11 TO 21: PRINT AT a,1;"            ";" " AND a>19: NEXT a: RETURN 
  9000 REM Load machine code into REM on first line
  9001 LET h$="2A365C2401FFFF09545D21FFFF0608481A0608173004368F180236202310F4134110ECC9": REM decode
  9002 LET h$=h$+"2A365C24545D21003D010003EDB0C9": REM copyall

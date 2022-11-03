@@ -162,12 +162,11 @@ the user font shown in the top half of the screen.
 ![Test mode display](TestMode.png)
 
 Pressing `shift`+`9` in view mode takes you to test mode which lets you type 
-using the user font. It first asks you what paper and ink colors to use. You can 
-then type away for multiple lines as well as use the delete key to bacspace. 
+using the user font. It uses the paper and ink colors from the character preview
+box. You can type for multiple lines as well as use the delete key to backspace. 
 Then press `STOP` (`symbol shift` + `a`) to quit and return to the view mode.
-
-You can access the extended mode characters here just like you do in view mode
-as described above.
+You can access the extended mode characters here with the one-key extended mode
+as well.
 
 The keys in edit mode are:
 
@@ -175,6 +174,7 @@ The keys in edit mode are:
 
     Shift+2        Toggle caps lock
     Shift+0        Backspace delete
+    SymbolShift+a  Exit test mode and return to view mode
     Shift+Symbol   Enter a one-keypress extended mode to get the characters
           Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
 
@@ -309,3 +309,13 @@ Changed the quit app to `symbol shift+Q` (`~<=`) so I could make
 `symbol shift+A` (`STOP`) be the shortcut for the tilde character. Also made 
 `symbol shift+S` (`NOT`) the vertical bar shortcut. The copy ROM font function 
 was moved to `symbol shift+E` (`>=`).
+
+### Version 2.2e - 17 September 2022
+Notionally improved support for the ZX Spectrum by making the memory locations 
+less hard-coded and use system variables to get addresses more. Rather than 
+using 64600 for the font location, use the UDG address minus 768 bytes. This 
+lets it work on a 16K Spectrum, however, that is too little RAM to load this
+program. Also check if RAMTOP needs moving or is it already below the font
+address. Changed the test mode to not ask for paper and ink color and it just
+uses the current character preview colors. Fixed a few cosmetic bugs with the 
+menus. Also improved the sample font loader program.
