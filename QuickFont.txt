@@ -1,9 +1,9 @@
     1 REM xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    2 REM  QUICKFONT 2.2c
+    2 REM  QUICKFONT 2.2d
     3 REM  BY RYAN GRAY
     4 REM 
     5 REM  v2.0 September 4,1985
-    6 REM  v2.2c  August 16,2022
+    6 REM  v2.2d  August 17,2022
     7 REM 
     8 CLEAR 64600-1
     9 LET ad=64600: LET h=INT (ad/256)-1: LET l=ad-256*(h+1): REM Addr. of alt font
@@ -20,7 +20,7 @@
    23 GO SUB 60: REM Bits into a$
    24 GO SUB 70: REM Print a$
    30 LET k$=INKEY$: LET k=CODE k$: IF k$="" THEN GO TO 30
-   31 IF k=226 THEN GO TO 500
+   31 IF k=199 THEN GO TO 500
    32 IF k=15 THEN GO TO 4000
    33 IF k=4 THEN GO TO 5000
    34 IF k=5 THEN GO TO 6000
@@ -33,9 +33,11 @@
    41 IF k=198 THEN LET k$="["
    42 IF k=197 THEN LET k$="]"
    43 IF k=14 THEN GO SUB 7150
-   44 IF k=199 THEN GO SUB 450
+   44 IF k=200 THEN GO SUB 450
    45 IF k=10 THEN GO SUB 7070
    46 IF k=11 THEN GO SUB 7080
+   47 IF k=226 THEN LET k$=CHR$ 126
+   48 IF k=195 THEN LET k$=CHR$ 124
    49 IF k=7 AND ub>1 THEN LET ub=ub-1: PAPER ub: LET uf=7 AND ub<2: GO SUB 7000: GO SUB 7100: GO SUB 70
    50 IF k=6 AND ub<7 THEN LET ub=ub+1: PAPER ub: LET uf=7 AND ub<2: GO SUB 7000: GO SUB 7100: GO SUB 70
    51 IF k$>=" " AND k$<="\*" THEN LET c$=k$: GO SUB 82: GO SUB 55: GO SUB 60: GO SUB 70
@@ -194,7 +196,7 @@
  7080 LET fc=fc+1: IF fc=8 THEN LET fc=0
  7081 GO TO 7039
  7100 REM VIEW MENU
- 7110 PRINT AT 11,0;" Press key to"'"  view char. "'" Enter  :EDIT"'" Shift+3:SAVE"'" Shift+4:LOAD"'" Shift+9:TEST"'" Stop   :EXIT"'" <= :Copy ROM"'" Shift+SymbSh"'
+ 7110 PRINT AT 11,0;" Press key to"'"  view char. "'" Enter  :EDIT"'" Shift+3:SAVE"'" Shift+4:LOAD"'" Shift+9:TEST"'" Symbl+Q:QUIT"'" >= :Copy ROM"'" Shift+Symbl "'
  7111 IF speccy THEN PRINT " then:yupasdfg";AT 21,1;"gets:[]\*~|\\{}"
  7112 IF NOT speccy THEN PRINT " then:yupdfg";AT 21,1;"gets:[]\*\\{}"
  7120 PRINT AT 12,24;"VIEWING";AT 20,23;"FG:^5-+8";AT 21,23;"BG:^6-+7": RETURN 

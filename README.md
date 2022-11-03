@@ -120,12 +120,12 @@ The keys in view mode are:
     Shift+5 or 8   Change the preview box background color
     Shift+6 or 7   Change the preview box foreground color
     Shift+9        Enter the test mode to type with the font
-    STOP           Quit the program
+    SymbolShift+q  Quit the program
     Shift+Symbol   Enter a one-keypress extended mode to get the characters
           Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
     SymbolShift+   Shortcuts to enter the characters: [ ] ~ | \ { }
      y u a s d f g
-    SymbolShift+q  Copy the ROM font over the user font (with  confirmation)
+    SymbolShift+e  Copy the ROM font over the user font (with confirmation)
     Other keys     Views that character
 
 ## Edit Mode
@@ -303,3 +303,9 @@ Added changing the app background color with `shift+1` and `shift+2`.
 Added caps lock toggling in test mode.
 Fixed not zeroing the d() array when using the clear all bits function, which
 was scrambling the subsequent editing.
+
+### Version 2.2d - 17 August 2022
+Changed the quit app to `symbol shift+Q` (`~<=`) so I could make 
+`symbol shift+A` (`STOP`) be the shortcut for the tilde character. Also made 
+`symbol shift+S` (`NOT`) the vertical bar shortcut. The copy ROM font function 
+was moved to `symbol shift+E` (`>=`).
