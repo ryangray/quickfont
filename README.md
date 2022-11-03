@@ -114,6 +114,7 @@ The keys in view mode are:
     Key            Function
 
     Enter          Go into edit mode for the current character
+    Shift+1 and 2  Change the application background color
     Shift+3        Save the font to tape
     Shift+4        Load a font from tape
     Shift+5 or 8   Change the preview box background color
@@ -167,6 +168,16 @@ Then press `STOP` (`symbol shift` + `a`) to quit and return to the view mode.
 
 You can access the extended mode characters here just like you do in view mode
 as described above.
+
+The keys in edit mode are:
+
+    Key            Function
+
+    Shift+2        Toggle caps lock
+    Shift+0        Backspace delete
+    Shift+Symbol   Enter a one-keypress extended mode to get the characters
+          Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
+
 
 ## Loading
 
@@ -286,3 +297,9 @@ font. Now the character offset and a$ location are just POKEd into the MC where
 the addresses are used since they are now only referenced once. Changed the MC
 loader to print all the hex digits then invert each pair as it loads the bytes
 to give a progress bar effect. 
+
+### Version 2.2c - 16 August 2022
+Added changing the app background color with `shift+1` and `shift+2`.
+Added caps lock toggling in test mode.
+Fixed not zeroing the d() array when using the clear all bits function, which
+was scrambling the subsequent editing.
