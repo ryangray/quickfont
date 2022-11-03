@@ -319,3 +319,20 @@ program. Also check if RAMTOP needs moving or is it already below the font
 address. Changed the test mode to not ask for paper and ink color and it just
 uses the current character preview colors. Fixed a few cosmetic bugs with the 
 menus. Also improved the sample font loader program.
+
+### Version 2.2f - 30 September 2022
+Fixed wrongly labeled forground/background preview color change keys. I'd had 
+the FG and BG labels reversed this whole time. Switched the MC loader to use 
+`DATA` statements. This is simpler, less code, and about twice as fast. Had to
+code a variable that says how many bytes there are since we can't do it by 
+checking the length of the hex string anymore. The loading progress is indicated
+by an "x/y" bytes counter.
+
+This version got a variant, 2.2f_64, that will run under the Zebra Systems' 
+OS-64 cartridge ROM that provides the high-res 64 column mode. The screen layout
+was tweaked to better use the larger screen area. This will probably be a 
+challenge to keep up with the changes to the main program, but being able to 
+output the .tap files as text and diff them should make this easier. I'll 
+probably also modify the code to perhaps minimize the differences with 
+parametric layout values. The memory layout is slightly different when running
+under OS-64, one of which was the ROM font is at a different address.
