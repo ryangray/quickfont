@@ -96,9 +96,8 @@ keyboard because these were replaced with the keywords `FREE` and `STICK`, and
 unfortunately, these characters can't be normally printed even though they
 are there in the font. You can select them and edit them on a 2068, but you 
 will see `FREE` and `STICK` in displayed except for in the magnified bits
-view. Support for these on a ZX Spectrum will be in a future update. See the 
-bonus program in tildebar.tap which give you access to these two characters 
-by copying their bytes from ROM to the UDGs A and B.
+view. See the bonus program in `tildebar.tap` which gives you access to these 
+two characters by copying their bytes from ROM to the UDGs A and B.
 
 Also, on the TS 2068, the `{` and `}` characters don't appear on the keyboard, 
 but as the manual describes, they do exist in extended mode on the `f` and `g` 
@@ -120,6 +119,7 @@ The keys in view mode are:
     Shift+5 or 8   Change the preview box background color
     Shift+6 or 7   Change the preview box foreground color
     Shift+9        Enter the test mode to type with the font
+    Shift+0        Toggle editing the UDG characters in the A-U characters
     SymbolShift+q  Quit the program
     Shift+Symbol   Enter a one-keypress extended mode to get the characters
           Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
@@ -127,6 +127,19 @@ The keys in view mode are:
      y u a s d f g
     SymbolShift+e  Copy the ROM font over the user font (with confirmation)
     Other keys     Views that character
+
+## UDG Editing
+
+In the view menu, you can press shift+0 to toggle editing the UDG characters in
+character positions A though U. The character labels below them with change to 
+inverse video to indicate this mode. 
+
+Also, during this mode, the user font characters A-U are temporarily swapped with 
+the UDGs A-U, so stopping the program here abnormally, will leave them swapped. 
+You can either just use `CONT` to continue the program, or try `GO SUB 7300` to
+swap them back if variables haven't been cleared. Otherwise, you could `RUN` the
+program again --- it will not think they are swapped --- and press shift+0 to 
+swap them, press `BREAK` (shift+space), and then re-`RUN` the program.
 
 ## Edit Mode
 
@@ -140,19 +153,22 @@ the right of the screen.
 
 The keys in edit mode are:
 
-    Key        Function
+    Key         Function
 
-    a and z    Move edit cursor up and down
-    k and l    Move edit cursor left and right
-    Arrow keys Also for edit cursor movement
-    space      Toggle bit on/off
-    5 and 8    Change preview box background color
-    6 and 7    Change preview box foreground color
-    0          Clear all bits (with confirmation)
-    r          Copy bits from the ROM character with confirmation
-    R		       Copy bits from the ROM character without confirmation
-    c or Edit  Cancel edits and go to view mode
-    Enter      Save edits and go to view mode
+    a and z     Move edit cursor up and down
+    k and l     Move edit cursor left and right
+    Arrow keys  Also for edit cursor movement
+    space or b  Toggle bit on/off
+    5 and 8     Change preview box background color
+    6 and 7     Change preview box foreground color
+    0           Clear all bits (with confirmation)
+    r           Copy bits from the ROM character with confirmation
+    R		    Copy bits from the ROM character without confirmation
+    c or Edit   Cancel edits and go to view mode
+    Enter       Save edits and go to view mode
+    ?           Show other key help:
+    A,Z,K,L     Shifted a/z/k/l shifts bits up/down/left/right
+    ? and /     Copy and paste bits between chars (symShift+ C and V)
     
 When you save changes to a character, the updated character will then appear in  
 the user font shown in the top half of the screen.
@@ -166,22 +182,23 @@ using the user font. It uses the paper and ink colors from the character preview
 box. You can type for multiple lines as well as use the delete key to backspace. 
 Then press `STOP` (`symbol shift` + `a`) to quit and return to the view mode.
 You can access the extended mode characters here with the one-key extended mode
-as well.
+as well. 
 
-The keys in edit mode are:
+The keys in test mode are:
 
     Key            Function
 
     Shift+2        Toggle caps lock
     Shift+0        Backspace delete
-    SymbolShift+a  Exit test mode and return to view mode
-    Shift+Symbol   Enter a one-keypress extended mode to get the characters
+    Shift+9        Enter a one-keypress block graphics character mode
+    Shift+Symbol   Enter a one-keypress extended mode to get the characters:
           Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
+    SymbolShift+a  Exit test mode and return to view mode
 
 
 ## Loading
 
-Pressing `shift`+`7` in view mode lets you load a font from tape previously 
+Pressing `shift`+`4` in view mode lets you load a font from tape previously 
 saved as a code block by this program or manually. It should be a code block of 
 768 bytes, but it doesn't have to be from the same address as it will be loaded 
 into the address the program is currently using for the user font.
@@ -194,7 +211,7 @@ and you will return to the view mode.
 
 ## Saving
 
-Pressing `shift`+`6` in view mode lets you save the current user font to tape. 
+Pressing `shift`+`3` in view mode lets you save the current user font to tape. 
 It will prompt you for a file name to give it. You can enter nothing to cancel 
 saving and return to the view mode. The font will be saved to tape as a code 
 block of 768 bytes from the address 64600. This can be loaded later, and the
@@ -336,3 +353,18 @@ output the .tap files as text and diff them should make this easier. I'll
 probably also modify the code to perhaps minimize the differences with 
 parametric layout values. The memory layout is slightly different when running
 under OS-64, one of which was the ROM font is at a different address.
+
+### Version 2.3 - 31 October 2022
+
+- Allow it to run as an AROS program from a .dck cartridge image since we have
+  utilities that can convert a basic program to do so. It just loads the MC 
+  below the font. I may just always do that and avoid the REM line storage.
+- Detect loaded bytes name and show in title bar
+- Add ability to edit UDGs, toggle with shift+0. No separate save/load yet.
+- Add MC routine to copy UDGs to/from user font area, swapping bytes.
+- Add ability to type UDGs in test mode (shift+9)
+- Add shift bits up/down/left/right (shift+A/Z/K/L) (BASIC code)
+- Add copy/paste bits between characters (symbShift+C/V)
+- New MC loader progress bar that doesn't slow the load down much
+- Had intended to add MC code for flips and rotates but it is still buggy.
+- Added a few REM labels for menu key codes and gosub calls
