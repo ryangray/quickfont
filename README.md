@@ -132,7 +132,9 @@ The keys in view mode are:
 
 In the view menu, you can press shift+0 to toggle editing the UDG characters in
 character positions A though U. The character labels below them with change to 
-inverse video to indicate this mode. 
+inverse video to indicate this mode. During this mode, the save and load 
+functions will apply to the UDG chaaracters only. It will keep separate file
+names for the font and UDGs which is shown on the top line.
 
 Also, during this mode, the user font characters A-U are temporarily swapped with 
 the UDGs A-U, so stopping the program here abnormally, will leave them swapped. 
@@ -209,6 +211,10 @@ emulator, you may need to mount a different tape file. To not load a file, enter
 the keyword `STOP` as the name by pressing `Symbol Shift` + `a` then `enter`, 
 and you will return to the view mode.
 
+If you are currently editing the UDG characters, the load applies to those 
+instead, and it keeps a separate file name for them. In this case, 168 bytes 
+will be loaded to address 65368 (USR "a"). 
+
 ## Saving
 
 Pressing `shift`+`3` in view mode lets you save the current user font to tape. 
@@ -218,6 +224,10 @@ block of 768 bytes from the address 64600. This can be loaded later, and the
 address it loads to can be changed as with loading any code block by giving the
 address with the load command as `LOAD "name"CODE address`. See the sample font
 loader program.
+
+If you are currently editing the UDG characters, the load applies to those 
+instead, and it keeps a separate file name for them. In this case, 168 bytes 
+will saved from address 65368 (USR "a"). 
 
 ## Using the Font
 
@@ -360,7 +370,7 @@ under OS-64, one of which was the ROM font is at a different address.
   utilities that can convert a basic program to do so. It just loads the MC 
   below the font. I may just always do that and avoid the REM line storage.
 - Detect loaded bytes name and show in title bar
-- Add ability to edit UDGs, toggle with shift+0. No separate save/load yet.
+- Add ability to edit UDGs, toggle with shift+0. Separate save/load names.
 - Add MC routine to copy UDGs to/from user font area, swapping bytes.
 - Add ability to type UDGs in test mode (shift+9)
 - Add shift bits up/down/left/right (shift+A/Z/K/L) (BASIC code)
