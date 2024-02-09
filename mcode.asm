@@ -1,37 +1,9 @@
-ROMFONT:	equ 0x3D00;	Start address of the ROM font
-DEST:		equ 23629;	The DEST system variable (2 bytes)
+ROMFONT:	equ 0x3D00;	Start address of the ROM font (different for OS-64)
+DEST:		equ 23629;	The DEST system variable (2 bytes): Address of variable in assignment
+CHARS:		equ 23606;	The CHARS system variable (2 bytes): Address of font - 256 bytes
+UDG:		equ 23675;  The UDG system variable (2 bytes): Address of UDGs
 
-org 0x685B
-
-USERFONT: 	defb 0xFC,0x58; Address of user font
-OFFS: 		defb 0x00,0x00; Offset of current char in font data
-DESTA:		defb 0x00,0x00; Address of a$ array
-
-; Copy1 copies the 8 bytes for the current character from ROMFONT+OFFS 
-; to USERFONT+OFFS. The BASIC program pokes the user font address into 
-; USERFONT at startup and the offset into OFFS when the current char
-; is selected.
-
-Copy1:	ld hl,(USERFONT)
-	ld bc, (OFFS)
-	add hl,bc
-	ld d,h
-	ld e,l
-	ld hl, ROMFONT
-	add hl,bc
-	ld bc,8
-	ldir
-	ret
-
-; CopyAll copies 768 bytes from ROMFONT to USERFONT. 
-
-CopyAll:ld hl,(USERFONT)
-	ld d,h
-	ld e,l
-	ld hl, ROMFONT
-	ld bc, $0300
-	ldir
-	ret
+org 0x0000
 
 ; Decode gets the address of the a$ array in BASIC that was stored in 
 ; DESTA, and then decodes the bits of the current user character into 
@@ -57,43 +29,138 @@ CopyAll:ld hl,(USERFONT)
 ; during program execution if new vars are made, so you need to update 
 ; this address before you call the Decode routine.
 
-Decode:	ld hl,(USERFONT)
-	ld bc,(OFFS)
+Decode:
+	ld bc,$FFFF;	Will poke OFFS here
+	ld hl,(CHARS)
+	inc h
 	add hl,bc
 	ld d,h
 	ld e,l
-	ld hl,(DESTA)
+	ld hl,$FFFF;	Will poke DEST of a$ here
 	ld b,8
-bytes:	ld c,b;		Swap new b back into c from below
+bytes:
+	ld c,b;		Swap new b back into c from below
 	ld a,(de);	Get byte
 	ld b,8
-bits:	rla;		Rotate bits L into carry
+bits:
+	rla;		Rotate bits L into carry
 	jr nc, space
 	ld (hl),0x8F;	Solid block for 1 bit
 	jr nextch
-space:	ld (hl),0x20;	Space for 0 bit
-nextch:	inc hl;		Next char in a$
+space:
+	ld (hl),0x20;	Space for 0 bit
+nextch:
+	inc hl;		Next char in a$
 	djnz bits
 	inc de;		Next byte
 	ld b,c;		Swap c into b for outer djnz loop
 	djnz bytes
 	ret
 
-; Check if the user font is blank and return non-zero in BC to BASIC if so
-; Not working yet.
+; CopyAll copies 768 bytes from ROMFONT to USERFONT. 
 
-isempty:
-	ld hl,(USERFONT)
-	ld bc, $0300
-	add hl, bc; 	Point hl to end of userfont to count down from 
-rep:	dec hl;		Next lower font byte
-	ld a, (hl);	Get font byte
-	jr nz, test;		If byte not 0, return with > 0 in BC
-	dec c;		Inner 256-byte loop
-	jr nz, rep
-	djnz rep;	Outer 3x loop
-	ret;		All font bytes zero, return with BC=0
-test:	ld b, 0;
-	ld c, a;
+CopyAll:
+	ld hl,(CHARS)
+	inc h
+	ld d,h;			de points to user font
+	ld e,l
+	ld hl, ROMFONT;	hl points to ROM font
+	ld bc, $0300;	96*8 bytes
+	ldir;			Copy bytes from ROM font to user font
 	ret
+
+; Swaps 21*8 bytes between the UDGs and the user font chars A-U
+
+UDG2font:
+	ld hl,(CHARS)
+	ld bc, 520;		(65(A)-32(space))*8 + 256
+	add hl, bc
+	ld d,h; 		de points to A in user font
+	ld e,l
+	ld hl, (UDG);	hl points to UDGs
+	ld b, 168; 		21*8 bytes
+u2f:ld a,(de);		Get font byte
+	ld c,a;			Save it in c
+	ld a,(hl);		Get UDG byte
+	ld (de),a;		Save it to font
+	ld (hl),c;		Put font byte in UDG
+	inc de
+	inc hl;			Point to next bytes
+	djnz u2f;		Next byte
+	ret
+
+# Not yet using this MC for flips and rotates
+# I was having trouble in the emulator getting some of this to work,
+# so I'm going to to pass on it for now.
+
+fliph:
+	ld bc,$FFFF;	Will poke offset here
+	ld hl,(CHARS)
+	inc h
+	add hl,bc;		hl has char addr
+	ld b,8
+fliph8:
+	ld c,b
+	ld d,(hl);		Get byte
+	ld b,8
+fliph1:
+	rr d;			Bit0 to carry...
+	rla;			...carry into bit 0 of a
+	djnz fliph1
+	ld (hl),a;		Put flipped byte back
+	inc hl;			Next byte
+	ld b,c;			Swap c into b for outer djnz loop
+	djnz fliph8
+	ret
+	
+rotL:
+	ld bc,$FFFF;	Will poke offset here
+	ld hl,(CHARS)
+	inc h
+	add hl,bc;		hl has char addr
+	ld bc,8
+	add hl,bc;		point to last byte+1
+	ld b,8
+rotL80:
+	dec hl
+	ld a,(hl)
+	push af			; Push 8 bytes to stack
+	xor a
+	ld (hl),a		; Zero the byte
+	djnz rotL80
+	ld b,8			; 8 bytes
+rotL8:
+	ld c,b
+	pop de			; Get byte
+	ld b,8			; Process its 8 bits
+rotL1:
+	ld a,(hl)		; Get new byte
+	rr d;			Bit0 to carry...
+	rla;			...carry into bit 0 of a
+	ld (hl),a		; Put back
+	inc hl
+	djnz rotL1
+	ld b,8			; Point hl back to byte0
+rotL18:
+	dec hl
+	djnz rotL18
+	ld b,c;			Swap c into b for outer djnz loop
+	djnz rotL8
+	ret
+
+rotT:
+	ld bc,$FFFF;	Will poke offset here
+	ld hl,(CHARS)
+	inc h
+	add hl,bc;		hl has char addr
+	ld bc,8
+	add hl,bc;		point to last byte+1
+	ld b,8
+rotT80:
+	dec hl
+	djnz rotT80
+	ld b,h
+	ld c,l
+	ret
+	
 end
