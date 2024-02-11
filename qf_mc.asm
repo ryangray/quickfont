@@ -30,9 +30,9 @@ org 0x0000
 ; this address before you call the Decode routine.
 
 Decode:
-	ld bc,$FFFF;	Will poke OFFS here
 	ld hl,(CHARS)
 	inc h
+	ld bc,$FFFF;	Will poke OFFS here
 	add hl,bc
 	ld d,h
 	ld e,l
@@ -89,9 +89,9 @@ u2f:ld a,(de);		Get font byte
 	djnz u2f;		Next byte
 	ret
 
-# Not yet using this MC for flips and rotates
-# I was having trouble in the emulator getting some of this to work,
-# so I'm going to to pass on it for now.
+; Not yet using this MC for flips and rotates
+; I was having trouble in the emulator getting some of this to work,
+; so I'm going to to pass on it for now.
 
 fliph:
 	ld bc,$FFFF;	Will poke offset here
