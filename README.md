@@ -1,4 +1,4 @@
-# QuickFont
+# QuickFont User Guide
 
 QuickFont is a user font editor in BASIC for the Timex Sinclair 2068 and 
 Sinclair ZX Spectrum.
@@ -49,16 +49,85 @@ sending character codes rather than bit patterns.
 QuickFont reserves some memory immediately below the UDGs by using the `CLEAR` 
 statement which moves the top of the BASIC area down as defined in the system 
 variable `RAMTOP`. It then lets you edit the characters, storing them in this 
-area. It lets you save and load the font to and from tape. You can load a 
-font from tape for use, but you need to reserve memory for it as well as 
-point `CHARS` to it. There is the sample font loader program in 
+area. This address is normally 64600. It lets you save and load the font to and
+from tape, so they will have this as a default address stored in the saved file.
+However, you can always load them into whatever location you need to by giving
+the address when loading the bytes, e.g.: `LOAD ""CODE address`
+
+To load a font for use, you need to reserve memory for it as well as point the
+system variable `CHARS` to it. There is a sample font loader program in 
 `FontLoader.tap` to show you how to do it. You can load the font into a 
 different location if you wish by giving the `LOAD ""CODE` command the desired
 address. Since the font is above `RAMTOP`, it will persist even after a `NEW` 
-command until you reset the machine or move `RAMTOP` above it.
+command until you reset the machine or move `RAMTOP` above it. An exception is
+when loading the font into an reserved area such as with OS-64 storing the font
+in RAM in the unused screen attribute area.
 
-There are some sample fonts in the `fonts` folder stored in `.tap` files. You 
-can use the `FontLoader` program to load them, or load them yourself.
+There are some sample fonts included stored in `.tap` files. You can use the
+`FontLoader` program to load them, or load them yourself.
+
+## Files
+
+The files in the distribution (`QuickFont.zip`) are:
+
+* `QuickFont.tap`
+
+    This is the main program. It only contains the main program. It will autorun
+    when you load the program.
+
+* `QuickFont_OS64.tap`
+
+    This is the version made for running with Zebra System's OS-64 cartridge. It
+    is useful if you are going to edit a font or UDGs to be used under OS-64.
+    This is still an older version (2.2f), and needs updating. OS-64 copies the
+    ROM font to RAM (in the display file 1 attributes area which is unused),
+    which makes loading user fonts easier since you don't have to `POKE` the
+    font address, but you do have to load it into that address.
+
+* Font files (`*_font.tap`)
+
+    I've included several font files to get you started. Many of them were  ones
+    I made back in the 80s. They are a `CODE` bytes segment, each in separate
+    .tap files. You can mount the .tap file and then load the font into the
+    editor.
+
+* Font Loader Example (`FontLoader.tap`)
+
+    This is a small program that demonstrates how you might load a font in your
+    own programs. The .tap file contains the sample program and a font.
+
+* Tilde and Vertical Bar Characters (`tildebar.tap`)
+
+    The Timex Sinclair 2068 issn't able to display these two characters from the
+    Sinclair font, although the bit patters are in the ROM. Timex replaced these
+    with the new tokens for the `FREE` and `STICK` functions. You can still edit
+    these in the font but on the 2068, you can't use them directly. This utility
+    copies the bytes for them into the first two UDG characters. 
+
+* `QuickFont_zmb.bas`
+
+    This is the main source file in a [Zmakebas][] format from which
+    `QuickFont.tap` is made. 
+  
+* `QuickFont.bas`
+
+    This is made from `QuickFont.tap` to not have the comments from
+    `QuickFont_zmb.bas`. 
+
+[Zmakebas]: https://github.com/chris-y/zmakebas
+
+## Machine Code
+
+To do some of its operations quickly, QuickFont uses a little bit of machine
+code to help out. This should be already stored in the line 1 REM statement and
+not have to be loaded on startup. If is does need to be loaded, then the program
+will do that from some DATA statements when it is first run. 
+
+The cartridge (.dck file) version runs with the BASIC code in ROM, so it has to
+load the machine code into RAM. It puts it just below the user font in memory
+and adjusts RAMTOP down to just below that. A future version may just always
+store the machine code this way, loading it from a separate CODE segment in the
+.tap file.
 
 ## View Mode
 
@@ -113,13 +182,15 @@ The keys in view mode are:
     Key            Function
 
     Enter          Go into edit mode for the current character
-    Shift+1 and 2  Change the application background color
-    Shift+3        Save the font to tape
-    Shift+4        Load a font from tape
+    Shift+1        Show the character byte codes
+    Shift+2        Cycle the application background color
+    Shift+3        Save the font or UDGs to tape
+    Shift+4        Load a font or UDGs from tape
     Shift+5 or 8   Change the preview box background color
     Shift+6 or 7   Change the preview box foreground color
-    Shift+9        Enter the test mode to type with the font
-    Shift+0        Toggle editing the UDG characters in the A-U characters
+    Shift+9        Switch between editing the font and editing the UDG
+                   characters in the A-U characters
+    Shift+0        Enter the test mode to type with the font
     SymbolShift+q  Quit the program
     Shift+Symbol   Enter a one-keypress extended mode to get the characters
           Shift      [ ] ~| \ { } and copyright by then pressing y u a s d f g or p
@@ -130,7 +201,7 @@ The keys in view mode are:
 
 ## UDG Editing
 
-In the view menu, you can press shift+0 to toggle editing the UDG characters in
+In the view menu, you can press shift+9 to toggle editing the UDG characters in
 character positions A though U. The character labels below them with change to 
 inverse video to indicate this mode. During this mode, the save and load 
 functions will apply to the UDG chaaracters only. It will keep separate file
@@ -164,13 +235,16 @@ The keys in edit mode are:
     5 and 8     Change preview box background color
     6 and 7     Change preview box foreground color
     0           Clear all bits (with confirmation)
-    r           Copy bits from the ROM character with confirmation
-    R		    Copy bits from the ROM character without confirmation
-    c or Edit   Cancel edits and go to view mode
+    e or >=     Copy bits from the ROM character with confirmation
+    E	          Copy bits from the ROM character without confirmation
+    Shift+1     Cancel edits and go to view mode
     Enter       Save edits and go to view mode
     ?           Show other key help:
     A,Z,K,L     Shifted a/z/k/l shifts bits up/down/left/right
-    ? and /     Copy and paste bits between chars (symShift+ C and V)
+    c and p     Copy and paste bits between chars
+    h and v     Flip bits horizontally or vertically
+    r           Rotate bits left (less than key)
+    t           Rotate bits right (greater than key)
     
 When you save changes to a character, the updated character will then appear in  
 the user font shown in the top half of the screen.
@@ -378,3 +452,18 @@ under OS-64, one of which was the ROM font is at a different address.
 - New MC loader progress bar that doesn't slow the load down much
 - Had intended to add MC code for flips and rotates but it is still buggy.
 - Added a few REM labels for menu key codes and gosub calls
+
+### Version 2.4 - 10 February 2024
+
+- Make the UI BG color only cycle around after white back to black rather than
+  shift+1 and shift+2 for back and forth
+- Make shift+1 reveal the character bytes (not documented on screen)
+- Captures the loaded file name to show at the top and set it when you save
+- Allow editing of the UDG characters with shift+9 to switch back and forth.
+  They replace letters A through U, which are indicated with inverse letters,
+  and you just select and edit those. While in UDG mode, the save and load
+  apply to the UDGs only. The UDG filename is kept separately.
+- Changed copy ROM chars to e/E/>= in edit mode
+- Add extra keys help on ? key in edit mode
+- Add h/v flip (not MC) in edit mode: keys h and v
+- Add l/r rotate (not MC) in edit mode: keys r and t
