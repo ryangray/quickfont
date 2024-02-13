@@ -29,9 +29,9 @@ QuickFont.tap: QuickFont_zmb.bas
 	listbasic QuickFont.tap > QuickFont.bas
 	grep -v -E "^\s*$$" QuickFont_zmb.bas | grep -v -E "^#" | diff --ignore-trailing-space - QuickFont.bas || echo "WARNING: listbasic version differs from zmakebas version"
 
-Quickfont.zip: QuickFont.tap README.html
+Quickfont.zip: QuickFont.tap QuickFont.dck QuickFont_OS64.tap README.html FontLoader.tap FontLoader.bas tildebar.tap tildebar.bas
 	rm -f QuickFont.zip
-	zip -j QuickFont.zip QuickFont.tap QuickFont.dck QuickFont.bas README.html *.png ../github/fonts/*_font.tap ../FontLoader.tap ../FontLoader.bas ../tildebar.tap ../tildebar.bas
+	zip -j QuickFont.zip QuickFont.tap QuickFont.bas QuickFont.dck QuickFont_OS64.tap QuickFont_OS64.bas README.html *.png fonts/*_font.tap FontLoader.tap FontLoader.bas tildebar.tap tildebar.bas
 
 README.html: README.md
 	pandoc -s -o README.html README.md
