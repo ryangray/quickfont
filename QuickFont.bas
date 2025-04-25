@@ -136,8 +136,11 @@
   510 STOP 
   600 REM List bytes
   610 PRINT AT 11,0;" Bytes:       "'
+  612 LET h$="0123456789ABCDEF"
   620 FOR a=0 TO 7
-  630 PRINT "  ";a;": ";d(a+1);TAB 13
+  622 LET k=d(a+1)
+  624 LET i=INT (k/16): LET j=k-16*i
+  630 PRINT "  ";a;": $";h$(i+1);h$(j+1);" ";" " AND k<100;" " AND k<10;k;TAB 13
   640 NEXT a
   650 PRINT TAB 14;AT 21,1;TAB 15;
   660 PRINT #0;"Press a key"
